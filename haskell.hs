@@ -1,7 +1,7 @@
 import Data.IORef
 
 -- Synonyme Code
-type Code = Integer
+type Code = Int
 -- Liste associative
 -- Tous les caractères individuellement, avec leurs traductions
 data ListeAssociative = ListeAssociative [(String,Code)] deriving (Show)
@@ -20,45 +20,69 @@ class Table a where
 
 instance Table ListeAssociative where
 	empty = ListeAssociative []
--- Si vide
+--insert
 	insert (ListeAssociative []) newElement = (ListeAssociative [(newElement,0)])
--- sinon
 	insert (ListeAssociative [(oldElement,co)]) newElement = (ListeAssociative [(newElement,co+1)])
 	insert (ListeAssociative (x:xs)) newElement = (ListeAssociative [(newElement,co+1)])
-		where (val,co) = head (reverse xs)
+		where 
+			(val,co) = head (reverse xs)
 --codeOf
-	codeOf (ListeAssociative((code,carac):[])) key = 
-		if key == carac
-		then Just code
+	codeOf (ListeAssociative [(oldElement,co)]) element = 
+		if element == oldElement
+		then Just co
 		else Nothing
+	
+	codeOf (ListeAssociative (x:xs)) element = 
+		if val == element
+		then Just co
+		else
+		lookup element xs
+			where
+				(val,co) = x
 --stringOf
-	stringOf (ListeAssociative((code,carac):[])) key =
-		if key == code
-		then Just carac
+	stringOf (ListeAssociative [(oldElement,co)]) element = 
+		if co == element
+		then Just oldElement
 		else Nothing
+
+	stringOf (ListeAssociative (x:xs)) element = 
+		if co == element
+		then Just val	
+		else 
+		stringOf (ListeAssociative xs) element
+			where
+				(val,co) = x
 --isIn
-	isIn (ListeAssociative((code,carac):[])) key = --key String
-		if mot == key
+	isIn (ListeAssociative [(oldElement,co)]) element = 
+		if oldElement == element
+		then True
+		else False
+
+	isIn (ListeAssociative (x:xs)) element = 
+		if val == element
+		then True
+		else 
+		if find /= Nothing
 		then True
 		else False
 			where
-				mot = case (codeOf (ListeAssociative((code,carac):[])) key) of	--key =String
-						Nothing -> "Nothing"
-						Just carac -> key
---	split ListeAssociative [] = empty
--- Jeux de tests
-testAJouter1 = insert (ListeAssociative[(1,"a")]) "DADA"
-testIsIn = isIn (ListeAssociative[(1,"a"),(2,"b"),(3,"c")]) "b"
-testStringOf = codeOf (ListeAssociative[(1,"a"),(2,"b"),(3,"c")]) "d"
-testStringOf2 = codeOf (ListeAssociative[(1,"a")]) "a"
---testSplit = 
+				(val,co) = x
+				find = codeOf (ListeAssociative xs) element
 
-	
-	--split (ListeAssociative ((code,carac) : [])) chaine = 
-	--	if mot == "True"
-	--	then Just (carac,code,c)
-	--	else Nothing
-	--		where
-	--			mot = case (isIn (ListeAssociative((code,carac):[])) chaine) of
-	--				True -> "True"
-	--				False -> "False"
+--split
+	split (ListeAssociative [(oldElement,co)]) element = 
+		if oldElement == element
+		then (element,Just co,[])
+		else ([],Nothing,element)
+
+	split (ListeAssociative (x:xs)) element = 
+		if val == element
+		then (val,Just co,[])
+		else (chaine,cod, [])
+			where
+				chaine = head (takeWhile (isInVar == True) [n++n | n <- xs])
+				(val,co) = x
+				cod = codeOf (ListeAssociative xs) chaine
+				isInVar = isIn (ListeAssociative xs) xs 
+				
+
