@@ -10,7 +10,7 @@ type Code = Int
 data ListeAssociative = ListeAssociative [(String,Code)] deriving (Show)
 
 -- Defaut listeAssociative
-liste = [("a",1),("radee",2),("c",3),("d",4),("e",5),("f",6),("g",7),("h",8),("i",9),("j",10),("k",11),("l",12),("m",13),("n",14),("o",15),("p",16),("q",17),("r",18),("s",19),("t",20),("u",21),("v",22),("w",23),("x",24),("y",25),("z",26)]
+liste = [("a",1),("b",2),("c",3),("d",4),("e",5),("f",6),("g",7),("h",8),("i",9),("j",10),("k",11),("l",12),("m",13),("n",14),("o",15),("p",16),("q",17),("r",18),("s",19),("t",20),("u",21),("v",22),("w",23),("x",24),("y",25),("z",26)]
 
 class Table a where
 	empty :: a 
@@ -82,15 +82,17 @@ instance Table ListeAssociative where
 		if isIn (ListeAssociative (x:xs)) chaine 
 		then (chaine,cod chaine,[])
 		else
-		(find,cod find,[])
+		(suffix,cod suffix,prefix)
 			where
 				(val,co) = x 	
 				cod a = codeOf (ListeAssociative (x:xs)) a
-				find = head (reverse (filter p initialisation))
+				suffix = if (reverse (takeWhile p initialisation)) == [] 
+					then [] 
+					else head (reverse (takeWhile p initialisation)) 
 				initialisation = drop 1 (inits chaine)
 				p [lettre] = (isIn (ListeAssociative (x:xs)) [lettre]) == True
 				p (l:ls) = (isIn (ListeAssociative (x:xs)) (l:ls)) == True
-
+				prefix = drop (length suffix) chaine
 
 
 -- Jeux de test 
@@ -100,5 +102,5 @@ testInstert = ajouter (ListeAssociative (liste)) "bab"
 testCodeOf = codeOf (ListeAssociative (liste)) "a"
 testStringOf = stringOf (ListeAssociative (liste)) 3
 testIsIn = isIn (ListeAssociative (liste)) "a"
-testSplit = split (ListeAssociative (liste)) "radeeeaaz"
+testSplit = split (ListeAssociative (liste)) "dadeeeaaz"
 testInits = takeWhile (isIn (ListeAssociative liste) ) 	
