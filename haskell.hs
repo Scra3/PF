@@ -1,6 +1,8 @@
 import Data.IORef
 import Data.Maybe
-
+import Data.List
+import qualified Data.Map as Map
+	
 -- Synonyme Code
 type Code = Int
 -- Liste associative
@@ -8,11 +10,11 @@ type Code = Int
 data ListeAssociative = ListeAssociative [(String,Code)] deriving (Show)
 
 -- Defaut listeAssociative
-liste = [("a",1),("b",2),("c",3),("d",4),("e",5),("f",6),("g",7),("h",8),("i",9),("j",10),("k",11),("l",12),("m",13),("n",14),("o",15),("p",16),("q",17),("r",18),("s",19),("t",20),("u",21),("v",22),("w",23),("x",24),("y",25),("z",26)]
+liste = [("a",1),("radee",2),("c",3),("d",4),("e",5),("f",6),("g",7),("h",8),("i",9),("j",10),("k",11),("l",12),("m",13),("n",14),("o",15),("p",16),("q",17),("r",18),("s",19),("t",20),("u",21),("v",22),("w",23),("x",24),("y",25),("z",26)]
 
 class Table a where
 	empty :: a 
-	insert :: a -> String -> a
+	ajouter :: a -> String -> a
 	codeOf :: a -> String -> Maybe Code
 	stringOf :: a -> Code -> Maybe String
 	isIn :: a -> String -> Bool
@@ -22,9 +24,9 @@ class Table a where
 instance Table ListeAssociative where
 	empty = ListeAssociative []
 --insert
-	insert (ListeAssociative []) newElement = (ListeAssociative [(newElement,0)])
-	insert (ListeAssociative [(oldElement,co)]) newElement = (ListeAssociative [(newElement,co+1)])
-	insert (ListeAssociative (x:xs)) newElement = (ListeAssociative [(newElement,co+1)])
+	ajouter (ListeAssociative []) newElement = (ListeAssociative [(newElement,0)])
+	ajouter (ListeAssociative [(oldElement,co)]) newElement = (ListeAssociative [(newElement,co+1)])
+	ajouter (ListeAssociative (x:xs)) newElement = (ListeAssociative [(newElement,co+1)])
 		where 
 			(val,co) = head (reverse xs)
 --codeOf
@@ -76,25 +78,27 @@ instance Table ListeAssociative where
 		then (element,Just co,[])
 		else ([],Nothing,element)
 
-	split (ListeAssociative (x:xs)) (xElement:xsElement) = 
-		if val == xVal
-		then split (ListeAssociative (x : (head xs):[])) xsElement
-		else 
-		(valeurCodePrecedent,Just codePrecedent,[])
+	split (ListeAssociative (x:xs)) chaine =
+		if isIn (ListeAssociative (x:xs)) chaine 
+		then (chaine,cod chaine,[])
+		else
+		(find,cod find,[])
 			where
-				(val,co) = x
-				xVal = xElement:[]
-				codePrecedent = co - 1
-				valeurCodePrecedent = fromJust (stringOf (ListeAssociative xs) codePrecedent)
+				(val,co) = x 	
+				cod a = codeOf (ListeAssociative (x:xs)) a
+				find = head (reverse (filter p initialisation))
+				initialisation = drop 1 (inits chaine)
+				p [lettre] = (isIn (ListeAssociative (x:xs)) [lettre]) == True
+				p (l:ls) = (isIn (ListeAssociative (x:xs)) (l:ls)) == True
+
+
 
 -- Jeux de test 
 --fromMaybe "" (Just "Hello, World!")
 
-
-testInstert = insert (ListeAssociative (liste)) "bab"
+testInstert = ajouter (ListeAssociative (liste)) "bab"
 testCodeOf = codeOf (ListeAssociative (liste)) "a"
 testStringOf = stringOf (ListeAssociative (liste)) 3
 testIsIn = isIn (ListeAssociative (liste)) "a"
-testSplit = split (ListeAssociative (liste)) "age"
-				
-
+testSplit = split (ListeAssociative (liste)) "radeeeaaz"
+testInits = takeWhile (isIn (ListeAssociative liste) ) 	
