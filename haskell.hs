@@ -22,11 +22,14 @@ class Table a where
 	
 
 instance Table ListeAssociative where
+
+--empty
 	empty = ListeAssociative []
+
 --insert
-	ajouter (ListeAssociative []) newElement = (ListeAssociative [(newElement,0)])
-	ajouter (ListeAssociative [(oldElement,co)]) newElement = (ListeAssociative [(newElement,co+1)])
-	ajouter (ListeAssociative (x:xs)) newElement = (ListeAssociative [(newElement,co+1)])
+	ajouter (ListeAssociative []) newElement = ListeAssociative [(newElement,0)]
+	ajouter (ListeAssociative [(oldElement,co)]) newElement = ListeAssociative $[(oldElement,co)] ++ [(newElement,co+1)]
+	ajouter (ListeAssociative (x:xs)) newElement = ListeAssociative $ (x:xs) ++ [(newElement,co+1)]
 		where 
 			(val,co) = head (reverse xs)
 --codeOf
@@ -86,21 +89,38 @@ instance Table ListeAssociative where
 			where
 				(val,co) = x 	
 				cod a = codeOf (ListeAssociative (x:xs)) a
-				suffix = if (reverse (takeWhile p initialisation)) == [] 
+				suffix = if (reverse $ takeWhile p initialisation) == [] 
 					then [] 
-					else head (reverse (takeWhile p initialisation)) 
-				initialisation = drop 1 (inits chaine)
-				p [lettre] = (isIn (ListeAssociative (x:xs)) [lettre]) == True
-				p (l:ls) = (isIn (ListeAssociative (x:xs)) (l:ls)) == True
+					else head (reverse $ takeWhile p initialisation) 
+				initialisation = drop 1 $ inits chaine
+				p [lettre] = isIn (ListeAssociative (x:xs)) [lettre] == True
+				p (l:ls) = isIn (ListeAssociative (x:xs)) (l:ls) == True
 				prefix = drop (length suffix) chaine
 
 
--- Jeux de test 
---fromMaybe "" (Just "Hello, World!")
+-- Encodage
+
+lzwEncode :: Table a => a -> String  -> [Code]
+lzwEncode table [] = []
+lzwEncode table chaine = 
+	case  split table chaine of 
+		(prefix,Just code,[]) -> [code]
+		(_,Nothing,_) -> []
+		(prefix,Just code,suffix) -> code : lzwEncode newTable suffix
+						where
+							newPrefix = prefix ++ [head suffix]
+							newTable = ajouter table newPrefix
+	
+
+
+-- Décodage
+
+--Jeux de test 
 
 testInstert = ajouter (ListeAssociative (liste)) "bab"
 testCodeOf = codeOf (ListeAssociative (liste)) "a"
 testStringOf = stringOf (ListeAssociative (liste)) 3
 testIsIn = isIn (ListeAssociative (liste)) "a"
-testSplit = split (ListeAssociative (liste)) "dadeeeaaz"
-testInits = takeWhile (isIn (ListeAssociative liste) ) 	
+testSplit = split (ListeAssociative (liste)) "dadeeerfij(-è_çà'regiehgiehrgpoiàààçç_'_è'è-''zehrgpoizerhgerpzihgezrgpihregpihzergpiehrgerzpiheaaz"
+testInits = takeWhile (isIn (ListeAssociative liste) ) 
+testLzwEncode = lzwEncode (ListeAssociative liste) "dfezfoihujiouhygtfrrdtfyguhijouyh_-('thtgrefderfgtyjuhtgfedsxdtfrytfyuhijmuytfrytfyghuiuhyigtufrydeyrftyhuoi'(-è_è-hfzefoih"
