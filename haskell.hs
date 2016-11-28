@@ -10,7 +10,7 @@ type Code = Int
 data ListeAssociative = ListeAssociative [(String,Code)] deriving (Show)
 
 -- Defaut listeAssociative
-liste = [("a",1),("b",2),("c",3),("d",4),("e",5),("f",6),("g",7),("h",8),("i",9),("j",10),("k",11),("l",12),("m",13),("n",14),("o",15),("p",16),("q",17),("r",18),("s",19),("t",20),("u",21),("v",22),("w",23),("x",24),("y",25),("z",26),(" ",27)]
+liste = [("a",0),("b",1),("c",2)]--,("d",4),("e",5),("f",6),("g",7),("h",8),("i",9),("j",10),("k",11),("l",12),("m",13),("n",14),("o",15),("p",16),("q",17),("r",18),("s",19),("t",20),("u",21),("v",22),("w",23),("x",24),("y",25),("z",26),(" ",27)]
 
 class Table a where
 	empty :: a 
@@ -89,9 +89,9 @@ instance Table ListeAssociative where
 			where
 				(val,co) = x 	
 				cod a = codeOf (ListeAssociative (x:xs)) a
-				suffix = if (reverse $ takeWhile p initialisation) == [] 
-					then [] 
-					else head (reverse $ takeWhile p initialisation) 
+				suffix = case (takeWhile p initialisation) of 
+						[] -> []
+						code -> head $ reverse code	
 				initialisation = drop 1 $ inits chaine
 				p [lettre] = isIn (ListeAssociative (x:xs)) [lettre] == True
 				p (l:ls) = isIn (ListeAssociative (x:xs)) (l:ls) == True
@@ -104,14 +104,14 @@ lzwEncode :: Table a => a -> String  -> [Code]
 lzwEncode table [] = []
 lzwEncode table chaine = 
 	case  split table chaine of 
-		(prefix,Just code,[]) -> [code]
-		(_,Nothing,[]) -> []
+		(prefix,Just code,[]) -> [code] 	
+		(_,Nothing,_) -> []
 		(prefix,Just code,suffix) -> code : lzwEncode newTable suffix
 						where
 							newPrefix = prefix ++ [head suffix]
 							newTable = ajouter table newPrefix
 	
-
+	
 
 -- Décodage
 		
@@ -122,24 +122,17 @@ lzwDecode :: Table a => a -> [Code] -> String
 lzwDecode table [] = []
 lzwDecode table (x:xs) = 
 	case stringOf table x of
-		Just firstWord -> lzw_Decode table firstWord xs
+		Just firstWord -> getStringOfCode ++ lzw_Decode table firstWord xs
+			where 
+				getStringOfCode = fromJust $ stringOf table x
 		Nothing -> []
 
 
 lzw_Decode :: Table a => a -> String  -> [Code] -> String
-
 lzw_Decode table decoding codes = 
 	case codes of 
 		[] -> []
-		[code] -> newMot ++ lzw_Decode (ajouter table newMot) newMot []
-			where
-				-- On prend l'ancien mot traduit
-				newMot = lastMot ++ [head getStringOfCode]
-				lastMot = decoding
-				-- On récupère le code et on le traduit
-				getStringOfCode = fromJust $ stringOf table code
-
-		(x:xs) -> newMot ++  lzw_Decode (ajouter table newMot) newMot xs
+		(x:xs) -> getStringOfCode ++  lzw_Decode (ajouter table newMot) newMot xs
 			where
 				-- On prend l'ancien mot traduit
 				newMot = lastMot ++ [head getStringOfCode]
@@ -154,10 +147,9 @@ testInstert = ajouter (ListeAssociative (liste)) "bab"
 testCodeOf = codeOf (ListeAssociative (liste)) "a"
 testStringOf = stringOf (ListeAssociative (liste)) 3
 testIsIn = isIn (ListeAssociative (liste)) "a"
-testSplit = split (ListeAssociative (liste)) "dadeeerfij(-è_çà'regiehgiehrgpoiàààçç_'_è'è-''zehrgpoizerhgerpzihgezrgpihregpihzergpiehrgerzpiheaaz"
+testSplit = split (ListeAssociative (liste)) "salut"
 testInits = takeWhile (isIn (ListeAssociative liste) ) 
-testLzwEncode = lzwEncode (ListeAssociative liste) "salut tu vas bien"
+testEncode =  lzwEncode (ListeAssociative liste) "ababcbababaaaaaaa"
+testDecode = lzwDecode (ListeAssociative liste) testEncode
 
-
-testDecode2 = lzwDecode (ListeAssociative liste) [19,1,12,21,20,27,20,21,27,22,1,19,27,2,9,5,14]
 
