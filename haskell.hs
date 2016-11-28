@@ -1,8 +1,11 @@
 import Data.IORef
 import Data.Maybe
 import Data.List
+import Data.Char
+import Test.QuickCheck
+import System.IO.Unsafe
 import qualified Data.Map as Map
-
+import System.Random
 
 -- Synonyme Code
 type Code = Int
@@ -10,22 +13,22 @@ type Code = Int
 -- Tous les caractères individuellement, avec leurs traductions
 data ListeAssociative = ListeAssociative [(String,Code)] deriving (Show)
 
--- Defaut listeAssociative
-liste = [("a",0),("b",1),("c",2)]--,("d",4),("e",5),("f",6),("g",7),("h",8),("i",9),("j",10),("k",11),("l",12),("m",13),("n",14),("o",15),("p",16),("q",17),("r",18),("s",19),("t",20),("u",21),("v",22),("w",23),("x",24),("y",25),("z",26),(" ",27)]
-
 class Table a where
-	empty :: a 
+	empty :: a -> a 
 	ajouter :: a -> String -> a
 	codeOf :: a -> String -> Maybe Code
 	stringOf :: a -> Code -> Maybe String
 	isIn :: a -> String -> Bool
-	split :: a -> String -> (String ,Maybe Code ,String)
+	split1 :: a -> String -> (String ,Maybe Code ,String)
 	
 
 instance Table ListeAssociative where
 
 --empty
-	empty = ListeAssociative []
+	empty ( ListeAssociative [] ) = ListeAssociative( map (\(a,b)->(a:[],b)) (zip (take 256 [b..c]) [0..]) )
+		where
+			b = minBound::Char
+			c = maxBound::Char
 
 --insert
 	ajouter (ListeAssociative []) newElement = ListeAssociative [(newElement,0)]
@@ -77,12 +80,12 @@ instance Table ListeAssociative where
 				find = codeOf (ListeAssociative xs) element
 
 --split
-	split (ListeAssociative [(oldElement,co)]) element = 
+	split1 (ListeAssociative [(oldElement,co)]) element = 
 		if oldElement == element
 		then (element,Just co,[])
 		else ([],Nothing,element)
 
-	split (ListeAssociative (x:xs)) chaine =
+	split1 (ListeAssociative (x:xs)) chaine =
 		if isIn (ListeAssociative (x:xs)) chaine 
 		then (chaine,cod chaine,[])
 		else
@@ -104,7 +107,7 @@ instance Table ListeAssociative where
 lzwEncode :: Table a => a -> String  -> [Code]
 lzwEncode table [] = []
 lzwEncode table chaine = 
-	case  split table chaine of 
+	case  split1 table chaine of 
 		(prefix,Just code,[]) -> [code] 	
 		(_,Nothing,_) -> []
 		(prefix,Just code,suffix) -> code : lzwEncode newTable suffix
@@ -142,16 +145,8 @@ lzw_Decode table lastMot codes =
 				-- On traduit le prochain code
 				getStringOfCode = fromJust $ stringOf newTable x
 
-
---Jeux de test 
-
-testInstert = ajouter (ListeAssociative (liste)) "bab"
-testCodeOf = codeOf (ListeAssociative (liste)) "a"
-testStringOf = stringOf (ListeAssociative (liste)) 3
-testIsIn = isIn (ListeAssociative (liste)) "a"
-testSplit = split (ListeAssociative (liste)) "salut"
-testInits = takeWhile (isIn (ListeAssociative liste) ) 
-testEncode =  lzwEncode (ListeAssociative liste) "ababcbababaaaaaaa"
-testDecode = lzwDecode (ListeAssociative liste) testEncode
+-- Algorithmes de test
+verification :: String -> Bool
+verification xs = lzwDecode ( empty ( ListeAssociative [] ) ) (lzwEncode (empty ( ListeAssociative [] )) xs) == xs
 
 
