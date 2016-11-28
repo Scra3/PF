@@ -2,7 +2,8 @@ import Data.IORef
 import Data.Maybe
 import Data.List
 import qualified Data.Map as Map
-	
+
+
 -- Synonyme Code
 type Code = Int
 -- Liste associative
@@ -28,7 +29,7 @@ instance Table ListeAssociative where
 
 --insert
 	ajouter (ListeAssociative []) newElement = ListeAssociative [(newElement,0)]
-	ajouter (ListeAssociative [(oldElement,co)]) newElement = ListeAssociative $[(oldElement,co)] ++ [(newElement,co+1)]
+	ajouter (ListeAssociative [(oldElement,co)]) newElement = ListeAssociative $ [(oldElement,co)] ++ [(newElement,co+1)]
 	ajouter (ListeAssociative (x:xs)) newElement = ListeAssociative $ (x:xs) ++ [(newElement,co+1)]
 		where 
 			(val,co) = head (reverse xs)
@@ -122,23 +123,24 @@ lzwDecode :: Table a => a -> [Code] -> String
 lzwDecode table [] = []
 lzwDecode table (x:xs) = 
 	case stringOf table x of
-		Just firstWord -> getStringOfCode ++ lzw_Decode table firstWord xs
+		Just firstWord -> getStringOfCode ++ lzw_Decode table getStringOfCode xs
 			where 
 				getStringOfCode = fromJust $ stringOf table x
 		Nothing -> []
 
 
 lzw_Decode :: Table a => a -> String  -> [Code] -> String
-lzw_Decode table decoding codes = 
+lzw_Decode table lastMot codes = 
 	case codes of 
 		[] -> []
-		(x:xs) -> getStringOfCode ++  lzw_Decode (ajouter table newMot) newMot xs
+		(x:xs) -> getStringOfCode ++ lzw_Decode newTable getStringOfCode xs
 			where
-				-- On prend l'ancien mot traduit
+				-- On prend l'ancien mot traduit et on ajoute la tête du prochain mot
 				newMot = lastMot ++ [head getStringOfCode]
-				lastMot = decoding
-				-- On récupère le code et on le traduit
-				getStringOfCode = fromJust $ stringOf table x
+				-- On créer la noucelle table
+				newTable = ajouter table newMot
+				-- On traduit le prochain code
+				getStringOfCode = fromJust $ stringOf newTable x
 
 
 --Jeux de test 
