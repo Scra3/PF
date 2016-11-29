@@ -31,10 +31,9 @@ class Table a where
 test = APREF[('a',0,APREF[])]
 
 instance Table APREF where
+-----------
+-- Empty --
 -------------
--- Empty   --
--------------
-
 	empty =  APREF[('~',-1,APREF[])] 
 
 -------------
