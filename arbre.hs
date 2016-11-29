@@ -2,7 +2,7 @@ import Data.IORef
 import Data.Maybe
 import Data.List
 import Data.Char
-import Test.QuickCheck
+--import Test.QuickCheck
 import System.IO.Unsafe
 import qualified Data.Map as Map
 
@@ -27,25 +27,39 @@ class Table a where
 	isIn :: a -> String -> Bool
 	split :: a -> String -> (String ,Maybe Code ,String)
 	
+	
+test = APREF[('a',0,APREF[])]
 
 instance Table APREF where
+
 --empty
-	empty =  APREF[('~',1,APREF[])] 
+	empty =  APREF[] 
 --insert	
-	ajouter (APREF []) (lettre:lettres) = APREF[]
-		where
-			fils =  ajouter (add lettre) lettres
-			--Si l'arbre est vide on ajoute son premiere élément
-			test lett = APREF[(lett,1,APREF[])]
+	--Si la liste alors on ajoute un élément dans la liste et on renvoit un fils vide
+	ajouter (APREF []) lettres = 
+			case lettres of
+				(x:[]) -> APREF[(x,1,APREF[])] 
+				(x:xs) -> ajouter (add x) xs
+			where 
+			add x = get3 $ head [(x,1,APREF[])]
+			get3 (a,b,c) = c 				 
 
-			add lett = get3 $ head [(lett,1,APREF[])]
+	ajouter (APREF(ar:ars)) lettres = 
+			case lettres of
+				(x:[]) -> add (ar:ars) x
+				(x:xs) -> ajouter (add (ar:ars) x) xs
+			where 
+			-- parcourir x pour trouver si la lettre existe déjà : si filter trouve un élément alors renvoyer la liste de cet élément sinon insérer
+			add tree lett = factory (filter (\(cara,code,arbreSuivant) -> cara == lett) tree) lett tree
+			get2 (a,b,c) = b
 			get3 (a,b,c) = c 
+			-- on get le code	
+			getLastCode tree = get2 $ head (reverse tree) 				 
+			factory findLetter lett tree = 
+						if findLetter == [] 
+						then get3 $ head (reverse (tree ++ [(lett,(getLastCode tree) + 1, APREF[])]))
+						else get3 (head findLetter)
+						
+								  		
 
-	ajouter (APREF []) (lettre) = add lettre
-		where
-			--Si l'arbre est vide on ajoute son premiere élément
-			add lett = head [(lett,1,APREF[])]
-			get3 (a,b,c) = c  
-		
-		
-testAjouter = ajouter (APREF[]) "sa"
+testAjouter = ajouter (APREF[('a',1,APREF[])]) "bzeoifei"
