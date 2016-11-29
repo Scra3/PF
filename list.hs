@@ -147,5 +147,5 @@ lzw_Decode table lastMot codes =
 -- Algorithmes de test
 verification :: String -> Bool
 verification xs = lzwDecode ( empty ( ListeAssociative [] ) ) (lzwEncode (empty ( ListeAssociative [] )) xs) == xs
-
+testVerification = quickCheck verification
 

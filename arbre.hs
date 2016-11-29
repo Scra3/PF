@@ -22,7 +22,7 @@ data APREF = APREF [(Char,Code,APREF)] deriving (Show,Eq)
 class Table a where
 	empty :: a 
 	ajouter :: a -> String -> a
-	codeOf :: a -> String -> Maybe Code
+	codeOf :: a -> String -> Maybe Code	
 	stringOf :: a -> Code -> Maybe String
 	isIn :: a -> String -> Bool
 	split :: a -> String -> (String ,Maybe Code ,String)
@@ -30,11 +30,22 @@ class Table a where
 
 instance Table APREF where
 --empty
-	empty =  APREF[('~',-1,APREF[])] 
---insert
-	ajouter (APREF []) word = factoryTree
+	empty =  APREF[('~',1,APREF[])] 
+--insert	
+	ajouter (APREF []) (lettre:lettres) = APREF[]
 		where
-			factoryTree = foldl (\acc x -> add acc x) empty word
-			add arbre letter = APREF [(letter,1,APREF[])] 
+			fils =  ajouter (add lettre) lettres
+			--Si l'arbre est vide on ajoute son premiere élément
+			test lett = APREF[(lett,1,APREF[])]
 
-testAjouter = ajouter (APREF[]) "ok"
+			add lett = get3 $ head [(lett,1,APREF[])]
+			get3 (a,b,c) = c 
+
+	ajouter (APREF []) (lettre) = add lettre
+		where
+			--Si l'arbre est vide on ajoute son premiere élément
+			add lett = head [(lett,1,APREF[])]
+			get3 (a,b,c) = c  
+		
+		
+testAjouter = ajouter (APREF[]) "sa"
