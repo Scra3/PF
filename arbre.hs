@@ -59,7 +59,43 @@ instance Table APREF where
 						if findLetter == [] 
 						then get3 $ head (reverse (tree ++ [(lett,(getLastCode tree) + 1, APREF[])]))
 						else get3 (head findLetter)
-						
-								  		
 
-testAjouter = ajouter (APREF[('a',1,APREF[])]) "bzeoifei"
+
+--codeOf
+	codeOf (APREF []) lettres = Nothing
+
+	-- Si on chercher seulement une lettre dans la liste des fils et qu'on la trouve on envoit son Just code sinon nothing
+	codeOf (APREF(ar:ars)) (l:[]) = if ([find (ar:ars) l]) == []
+				then Nothing
+				else Just $ return (ar:ars) l
+		where 
+			find (ar:ars) letter = head $ filter (\(a,b,c) -> letter==a) (ar:ars)
+			getCode (a,b,c) = b
+			return (ar:ars) l = (\a -> 10 * a) $ getCode $ find (ar:ars) l
+
+
+	codeOf (APREF(ar:ars)) (l:ls) = if ([find (ar:ars) l]) == []
+						then Nothing
+						else Just $ call (ar:ars) l
+			where 
+				find (ar:ars) letter = head $ filter (\(a,b,c) -> letter==a) (ar:ars)
+				getCode (a,b,c) = b
+				getNext (a,b,c) = c
+				return (ar:ars) l = (\a -> 10 * a) $ getCode $ find (ar:ars) l	
+				call (ar:ars) l = fromJust (codeOf (getNext $ find (ar:ars) l) ls)					  		
+
+
+
+
+
+testAjouter = ajouter (APREF[('a',1,APREF[]),('b',1,APREF[]),('c',1,APREF[])]) "b"
+testCodeOf = codeOf (APREF[('a',1,APREF[]),('b',2,APREF[]),('c',3,APREF[('a',1,APREF[('b',20,APREF[])])])]) "cas"
+
+
+
+
+
+
+
+
+

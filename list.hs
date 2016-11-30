@@ -144,6 +144,8 @@ lzw_Decode table lastMot codes =
 				-- On traduit le prochain code
 				getStringOfCode = fromJust $ stringOf newTable x
 
+
+
 -- Algorithmes de test
 verification :: String -> Bool
 verification xs = lzwDecode ( empty ( ListeAssociative [] ) ) (lzwEncode (empty ( ListeAssociative [] )) xs) == xs
